@@ -1,0 +1,35 @@
+<footer class="main-footer" id="footer"
+	onclick="if(showInfo==2) {showInfo=0;$('serverInfo').style.display='block'} else showInfo++; ">
+	<div id="inner-footer-div" class="container-wrapper">
+		<div class="container-fluid" style="display: flex;">
+			<div style="width: 33%; text-align: left">Vers&atilde;o
+				$APPVERSION &middot; Copyright &copy; &middot; $COPYRIGHT_HOLDER
+				$COPYRIGHT_YEAR</div>
+			<div style="width: 34%; text-align: center">
+				#if($sistema!="")$sistema ($currentEnvironment)#end</div>
+			<div style="width: 33%; text-align: right">
+				<a title="topo pagina" class="lk_geral" href="#topo">Topo&nbsp;<i
+					class="fa fa-arrow-circle-up"></i></a>
+			</div>
+			
+		</div>
+		<div class="container-fluid" id="serverInfo"
+			style="text-align: center; display: none">$serverInfo</div>
+	</div>
+</footer>
+<table style="display: none">
+	<tr id="row_message">
+		<td colspan="90" style="text-align: center">
+			<div id="div_message" class="alert_error"></div>
+		</td>
+	</tr>
+</table>
+
+<style>
+.main-footer {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+</style>

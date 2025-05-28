@@ -1,0 +1,13 @@
+<base target="_self">
+<link type="text/css" rel="stylesheet"
+	href="${STATIC_CSS}dgita_w3/estilos_app.css" title="Style" />
+${cssImports}
+<link type="text/css" rel="stylesheet"
+	href="${STATIC_CSS}click-fix.css" title="Style" />
+
+${jsImports} 
+#if(${jsInclude}) 
+	#parse(${jsInclude}) 
+#end
+#parse("jsp/includes/scripts.html") 
+$form
