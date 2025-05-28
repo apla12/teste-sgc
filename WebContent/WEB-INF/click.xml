@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<click-app charset="UTF-8" locale="pt">
+	
+	<pages package="com.siemens.ssa.communicator.web">
+		<excludes pattern="/jsp/**/*.jsp,*.jsp" />
+	
+		<page path="/jsp/commons/errorPages/ErrorPageNoPermissions.htm" classname="jsp.errorPages.ErrorPageNoPermissions"/>
+		<page path="/jsp/commons/errorPages/Error.htm"  classname="jsp.errorPages.ErrorPage"/>
+		<!-- page path="/jsp/commons/errorPages/DgitaErrorPage.htm"  classname="jsp.commons.errorPages.ErrorPage"/-->		
+		<page path="/click/error.htm"  classname="jsp.errorPages.ErrorPage"/>
+		<page path="/click/not-found.htm"   classname="jsp.errorPages.ErrorPage"/>
+	</pages>
+	<!--  Override Click Error Page -->
+	<pages package="pt.atos.web">
+		<excludes pattern="/jsp/**/*.jsp,*.jsp" />
+		<page path="/jsp/commons/DescriptionPopup.htm" classname="click.page.DescriptionPopup"/>
+	</pages>
+	<!--<log-service classname="org.apache.click.extras.service.Log4JLogService" /> -->
+	<log-service classname="pt.atos.web.click.utils.logging.FrameworkClickLogService"/>
+
+	<!--  <mode value="production" /> -->
+	<mode value="debug" />
+	
+</click-app> 
