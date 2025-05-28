@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Class-Path: axis.jar 
+ jaxrpc.jar 
+ saaj.jar 
+ wsdl4j.jar 
+ InterfaceSeleccao_wsdl.jar 
+ InterfaceSubsistema_wsdl_V3.8.jar
+ ssa_client.jar 
+ communicator_callback_client.jar 
+ SSACommon.jar
+
