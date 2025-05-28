@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="pt">
+<head>
+<base target="_self">
+<title>#if($sistema!="")$sistema#end #if($tituloPage!="") ::
+	$tituloPage #else :: AT#end</title>
+<link type="text/css" rel="stylesheet"
+	href="${STATIC_CSS}dgita_w3/estilos_app.css" title="Style">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<meta http-equiv="x-ua-compatible" content="IE=8">
+<meta name="description"
+	content="Site do Sistema de Contabilidade Aduaneira">
+<meta name="keywords" content="AT; SCA">
+<meta name="language" content="PT">
+#if ($user.isOperador())
+	<link type="text/css" rel="stylesheet" href="${STATIC_CSS}pf-bundle.css"
+		title="Style">
+	<link type="text/css" rel="stylesheet" href="${STATIC_CSS}bootstrap.css"
+		title="Style">
+#else
+	<link type="text/css" rel="stylesheet" href="${STATIC_CSS}app-main.css"
+		title="Style">
+#end
+
+<link type="text/css" rel="stylesheet" href="${STATIC_CSS}click-fix.css"
+	title="Style">
+</head>
+<style type="text/css">
+body {
+	margin: 0px;
+}
+
+thisbody {
+	width: $pageWidth px;
+}
+</style>
+<body id="mainBody" onunload="">
+
+	<div id="scripts">
+		#parse("jsp/includes/scripts.html") ${jsImports} #if(${jsInclude})
+		#parse(${jsInclude}) #end
+		<script type="text/javascript">
+			//Let's hack into the form submision
+	
+	        function highlight(e){
+	        }
+			Event.observe(window, 'load', function() {
+				if ($('form') != null && $('form') != undefined)
+					Event.observe('form', 'submit', aguarde);
+			});
+		</script>
+		#if(${jsBeforePageBlock}) ${jsBeforePageBlock} #end
+	</div>
+
+	<a name="topo"> </a>
+	<div class="tbl_body_pop">
+
+
+		<div id="header">
+			#if($headInclude)#parse($headInclude)#end
+
+			<div id="bread-crumbs-div" class="txt_caminho"
+				style="padding-top: 5px;">$sistema &gt;&gt; $breadCrumbPath</div>
+		</div>
+
+		<div id="als_msg">
+			#if($alertMessage)
+
+			<table width="98%" cellspacing="0" cellpadding="0"
+				summary="Botões da Aplicação">
+				<tbody>
+					<tr>
+						<td valign="top" height="45"
+							style="border-top: 1px solid rgb(204, 204, 204); border-left: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242); text-align: center;">
+							<img width="36" vspace="5" height="33"
+							src="${STATIC_IMG}img_mensagem_alerta.gif"
+							alt="Mensagem de Alerta">
+						</td>
+						<td width="91%" height="30" class="txt_mensagens"
+							style="border-top: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242);">
+							<strong>$alertMessage</strong>
+						</td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top;"><img width="80" height="22"
+							src="${STATIC_IMG}img_seta_mensagens.gif"
+							style="margin-top: 0px;"></td>
+						<td style="border-top: 1px solid rgb(204, 204, 204);"> </td>
+					</tr>
+				</tbody>
+			</table>
+
+			#end
+		</div>
+		<!-- /als_msg -->
+		<div id="err_msgs">
+			#if($errorMessage)
+
+			<table width="98%" cellspacing="0" cellpadding="0"
+				summary="Caixa de Erro">
+				<tbody>
+					<tr>
+						<td valign="top" height="45"
+							style="border-top: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); border-left: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242); text-align: center;">
+							<img width="36" vspace="5" height="33"
+							src="${STATIC_IMG}img_mensagem_erro.gif" alt="Mensagem de Erro">
+						</td>
+						<td width="91%" height="30" class="txt_mensagens"
+							style="border-top: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242);">
+							<strong>$errorMessage</strong>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			#end
+		</div>
+		<div id="inf_msgs">
+			#if($infoMessage)
+
+			<table width="98%" cellspacing="0" cellpadding="0"
+				summary="Caixa de Informação">
+				<tbody>
+					<tr>
+						<td valign="top" height="45"
+							style="border-top: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); border-left: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242); text-align: center;">
+							<img width="36" vspace="5" height="33"
+							src="${STATIC_IMG}img_mensagem_informacao.gif"
+							alt="Mensagem de Informação">
+						</td>
+						<td width="91%" height="30" class="txt_mensagens"
+							style="border-top: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242);">
+							<strong>$infoMessage</strong>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			#end
+		</div>
+
+		<div id="suc_msgs">
+			#if($successMessage)
+
+			<table width="98%" cellspacing="0" cellpadding="0"
+				summary="Caixa de Informação Sucesso">
+				<tbody>
+					<tr>
+						<td width="80" valign="top" height="45"
+							style="border-top: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); border-left: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242); text-align: center;">
+							<img width="36" vspace="5" height="33"
+							src="${STATIC_IMG}img_mensagem_sucesso.gif"
+							alt="Mensagem de Sucesso">
+						</td>
+						<td width="865" height="30" class="txt_mensagens"
+							style="border-top: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242);">
+							<strong>$successMessage</strong>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			#end
+		</div>
+
+		#if($beforePageContainer) $beforePageContainer #end
+
+
+		<div id="aguarde-DIV"
+			style="width: 100%; height: 400px; text-align: center; padding-top: 180px; display: none">
+			<img style="width: 30px; height: 60px; vertical-align: middle;"
+				src="${STATIC_IMG}loading.gif"> <span
+				class="txt_titulo_pagina_dgaiec">Por favor Aguarde...</span>
+		</div>
+		<div id="main-DIV" class="thisbody">#parse(${path})</div>
+	</div>
+
+
+</body>
+</html>
+

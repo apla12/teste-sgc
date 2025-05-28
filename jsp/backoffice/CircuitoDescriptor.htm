@@ -1,0 +1,113 @@
+<script>
+
+
+</script>
+	
+		#if($dataAvailable)
+			<table style="width:100%">
+				<tr>
+					<td style="font-style:italic;width:25%;text-align: right;" colspan="2">
+					<a href="#" onClick="$(this).identify();javascript:this.up('div').hide()" >Close</a></td>
+					
+				</tr>		
+				
+					
+				<tr>
+					<td style="font-weight:bold;width:25%">N&uacute;mero de Sequ&ecirc;ncia:</td>
+					<td>
+						#if($rtr.chave.numSequencia)
+							#if($urlListaRetry)
+								<a href='$urlListaRetry' target="_blank">$rtr.chave.numSequencia</a>
+							#else
+								$rtr.chave.numSequencia
+							#end
+						#end
+					</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold;width:25%">N&uacute;mero de Aceita&ccedil;&atilde;o:</td>
+					<td>#if($rtr.numAceitacao)$rtr.numAceitacao#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Emissor:</td>
+					<td>#if($rtr.emissor)$rtr.emissor#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Receptor:</td>
+					<td>#if($rtr.receptor)$rtr.receptor#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">N&uacute;mero de Sequ&ecirc;ncia Anterior:</td>
+					<td>#if($rtr.numeroMensagemOriginal)$rtr.numeroMensagemOriginal#end</td>
+				</tr>
+				
+				#if($ctrlAvailable)
+				<tr>
+					<td style="font-weight:bold;width:25%">ID de Controlo:</td>
+					<td>#if($ctrl.chave.numeroControlo)$ctrl.chave.numeroControlo#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Sistema:</td>
+					<td>#if($ctrl.sistema)$ctrl.sistema#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Conferente:</td>
+					<td>#if($ctrl.conferente)$ctrl.conferente#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Verificador:</td>
+					<td>#if($ctrl.verificador)$ctrl.verificador#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Nome da Tarefa:</td>
+					<td>#if($ctrl.nomeTarefa)$ctrl.nomeTarefa#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">ID Tarefa:</td>
+					<td>#if($ctrl.idTarefa)$ctrl.idTarefa#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Momento:</td>
+					<td>#if($ctrl.momento)$ctrl.momento#end</td>
+				</tr>
+								
+				<tr>
+					<td style="font-weight:bold">N&uacute;mero da Adi&ccedil;&atilde;o</td>
+					<td>#if($ctrlItem.chave.numeroItem)$ctrlItem.chave.numeroItem#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Resultado do Controlo:</td>
+					<td>#if($ctrlItem.resultadoControlo)$ctrlItem.resultadoControlo#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Altera&ccedil;&atilde;o:</td>
+					<td>#if($ctrl.alterar)$ctrl.alterar#end</td>
+				</tr>
+				
+				<tr>
+					<td style="font-weight:bold">Info SSA:</td>
+					<td>#if($ctrlItem.infoSSA)$ctrlItem.infoSSA#end</td>
+				</tr>
+				#end
+			</table>
+		#else
+			<table>
+				<tr>
+					<td><img src="$STATIC_IMG/img_mensagem_alerta.gif"></img></td>
+					<td>Informa&ccedil;&atilde;o n&atilde;o dispon&iacute;vel para id $ID</td>
+				</tr>
+			</table>
+		#end
+

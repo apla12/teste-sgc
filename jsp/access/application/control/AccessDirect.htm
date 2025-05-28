@@ -1,0 +1,203 @@
+<script>
+function startStop(url,rowId,tableName){
+	if($('servidor_'+tableName+'_'+rowId).value==''){
+		alert('Por favor seleccione o servidor onde quer arrancar o motor');
+		return;
+	}
+	
+	ajaxUpdateDIV('','outrasFuncDisplay',url+"&server="+$('servidor_'+tableName+'_'+rowId).value);
+}
+</script>
+
+<style type="text/css">
+
+
+	.fb_button {
+	        background-color: #3b5998;
+	        border-color: #d8dfea rgb(14, 31, 91) rgb(14, 31, 91) rgb(216, 223, 234);
+	        border-style: solid;
+	        border-width: 1px;
+	        color: #fff;
+	        font-family: "Lucida grande", tahoma, verdana, arial, sans-serif;
+	        font-size: 13px;
+	        margin: 0 2px;
+	        padding: 2px 18px;
+	       
+	}
+	
+	.fb_button_red {
+	        background-color: red;
+	        border-color: #d8dfea rgb(14, 31, 91) rgb(14, 31, 91) rgb(216, 223, 234);
+	        border-style: solid;
+	        border-width: 1px;
+	        color: #fff;
+	        font-family: "Lucida grande", tahoma, verdana, arial, sans-serif;
+	        font-size: 13px;
+	        margin: 0 2px;
+	        padding: 2px 18px;
+	       
+	}
+</style> 
+
+#if($displayApplication)
+	$form
+	
+#else
+
+	#if($displayPainelOrquest) 
+	
+		$graphOrq
+		<script type="text/javascript">
+	
+			var titulo=$graphTitle;
+					
+		</script>
+	#end
+	
+	#if($displayPainelRespost) 
+		
+		$graphResposta
+		<script type="text/javascript">
+
+			var titulo=$graphTitle;
+			
+			var size=$resSize;
+			
+		</script>
+	#end	
+
+	#if($displayPainelListErros)
+		$listErros
+	#end	
+#end
+
+Data de Instala&ccedil;&atilde;o: $dataInstall
+<script><!--
+	function showLoadDiv(y,x){
+		var el  = $('loading');old=true;
+		if(el==null){
+			old=false;
+			el =  new Element('div', {
+				 	id: 'loading',
+				 	name: 'loading'
+				 	});
+		}
+	 	y= y-16;
+	 	x=x-16;
+		style = "position: absolute;left:"+y+"px;top :"+x+"px;width:32px;height:32px;background-image:url('${STATIC_IMG}img_loading.gif');"
+		
+	 	el.setStyle(style);
+	 	
+		if(!old){
+			$('mainBody').appendChild(el);
+		}
+	}
+	function hideLoadDiv(){
+		if($('loading')!=null)
+			$('loading').hide();
+	}
+
+
+	function refreshCircuito(){
+		var formdata = $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' });
+		$('form_circuitoContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+			
+		 new Ajax.Updater('form_circuitoContainer', '$circuitoPath', {
+		        method: 'post',
+		        parameters: formdata  ,
+		        evalJS: 'force',
+		        evalScripts: true,
+		        onFailure:function(transport) {}
+		        }
+		);
+	}
+	
+	function refreshEcras(){
+		var formdata = $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' });
+		$('form_ecrasContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+			
+		 new Ajax.Updater('form_ecrasContainer', '$ecrasPath', {
+		        method: 'post',
+		        parameters: formdata  ,
+		        evalJS: 'force',
+		        evalScripts: true,
+		        onFailure:function(transport) {}
+		        }
+		);
+	}
+	
+	function refreshCache(){
+		$('form_cacheContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+		$('form_propertiesContainer').innerHTML="";
+		 new Ajax.Updater('form_propertiesContainer', '$propertiesPath', {
+	         method: 'post',
+	         parameters:  $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' }) ,
+	         evalJS: 'force',
+	         evalScripts: true,
+	         onFailure:function(transport) {}
+	         }
+		);
+	
+		 new Ajax.Updater('form_cacheContainer', '$cachePath', {
+	         method: 'post',
+	         parameters:  $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' }) ,
+	         evalJS: 'force',
+	         evalScripts: true,
+	         onFailure:function(transport) {}
+	         }
+		);
+	}
+	function refreshPedidos(){
+		$('form_pedidosContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+		 new Ajax.Updater('form_pedidosContainer', '$pedidosPath', {
+	         method: 'post',
+	         parameters:  $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' }) ,
+	         evalJS: 'force',
+	         evalScripts: true,
+	         onFailure:function(transport) {}
+	         }
+		);
+	}
+	
+	 function refreshEngines(){
+		 $('form_engineContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+		 new Ajax.Updater('form_engineContainer', '$daemonPath', {
+	         method: 'post',
+	         parameters:  $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' }) ,
+	         evalJS: 'force',
+	         evalScripts: true,
+	         onFailure:function(transport) {}
+	         }
+		);
+	 }
+
+	 function refreshRespostas(){
+		 $('form_respostasContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+		 new Ajax.Updater('form_respostasContainer', '$respostasPath', {
+	         method: 'post',
+	         parameters:  $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' }) ,
+	         evalJS: 'force',
+	         evalScripts: true,
+	         onFailure:function(transport) {}
+	         }
+		);
+	 }
+
+	 function refreshRespostas2(){
+		 $('form_respostasContainer').innerHTML="<img style='width:30px;height:60px;vertical-align:middle;' src='${STATIC_IMG}img_loading.gif'>	<span class='txt_titulo_pagina_dgaiec' >Por favor Aguarde...</span>";
+		 new Ajax.Updater('form_respostasContainer', '$respostasPath'+'?table=true', {
+	         method: 'post',
+	         parameters:  $('form' ).serialize({ hash: true, submit: 'fakebuttonofsomekind' }) ,
+	         evalJS: 'force',
+	         evalScripts: true,
+	         onFailure:function(transport) {}
+	         }
+		);
+	 }
+	 
+	 refreshEngines();
+	 refreshPedidos();
+	 refreshCircuito();
+	 refreshCache();
+	 refreshEcras();	
+--></script>

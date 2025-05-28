@@ -1,0 +1,22 @@
+<base target="_self">
+<link type="text/css" rel="stylesheet"
+	href="${STATIC_CSS}dgita_w3/estilos_app.css" title="Style" >
+#if ($user.isOperador())
+	<link type="text/css" rel="stylesheet" href="${STATIC_CSS}pf-bundle.css"
+		title="Style">
+	<link type="text/css" rel="stylesheet" href="${STATIC_CSS}bootstrap.css"
+		title="Style">
+#else
+	<link type="text/css" rel="stylesheet" href="${STATIC_CSS}app-main.css"
+		title="Style">
+#end
+
+<link type="text/css" rel="stylesheet" href="${STATIC_CSS}click-fix.css"
+	title="Style">
+
+${jsImports} 
+#if(${jsInclude}) 
+	#parse(${jsInclude}) 
+#end
+#parse("jsp/includes/scripts.html") 
+$form

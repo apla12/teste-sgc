@@ -1,0 +1,1686 @@
+<style>
+    .selectTitle {
+        background: #d1d8d8 !important;
+    }
+
+    .selectTitleFont {
+        color: #000000;
+    }
+
+    .alerta {
+        padding: 20px;
+        background-color: #f44336;
+        color: white;
+    }
+
+    .equipamentosHeader {
+        border: 1px solid;
+        border-color: silver;
+        margin-left: 9px !important;
+        width: 99% !important;
+        background-color: silver;
+        margin-bottom: 25px;
+    }
+</style>
+
+#if($AJAXerros)
+<table id="ajaxErrorPanel" width="100%" cellspacing="0" cellpadding="0" summary="Mensagem de Alerta"
+    style="background-color: white;border: 2xp solid white">
+    <tbody>
+        <tr>
+            <td valign="top" height="45"
+                style="border-top: 1px solid rgb(204, 204, 204); border-left: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242); text-align: center;">
+                <img width="36" vspace="5" height="33" src="${STATIC_IMG}img_mensagem_alerta.gif"
+                    alt="Mensagem de Alerta">
+            </td>
+            <td width="91%" height="30" class="txt_mensagens"
+                style="border-top: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); background-color: rgb(242, 242, 242);">
+                <strong>$AJAXerros</strong>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><img width="80" height="22" src="${STATIC_IMG}img_seta_mensagens.gif"
+                    style="margin-top: 0px;"></td>
+            <td style="border-top: 1px solid rgb(204, 204, 204);"></td>
+        </tr>
+    </tbody>
+</table>
+#end
+
+<div id="main-form">
+    $form
+    <canvas id="the-canvas"></canvas>
+</div>
+
+#if($openConfirmSubmission)
+<script type="text/javascript">
+
+    jQ('#myModallite').modal('show');
+    fillModal('$URLInqueritoConfirm' + '&controlresult=' + jQ('#form_control_dau_comboResultadoControlo :selected').text(), '$returnVal');
+
+    jQ('#btnContinuar').click(function () {
+        jQ('#myModallite').modal('hide');
+
+        jQ('#myModallite').on('hidden.bs.modal', function (e) {
+            jQ("input[name=valConfirm]").val(true);
+            jQ('#form_control_doc_bt1').click();
+        });
+    });
+
+    jQ('#btnVoltar').click(function () {
+        jQ('#myModallite').modal('hide');
+
+        jQ('#myModallite').on('hidden.bs.modal', function (e) {
+            window.open('?', '_self');
+        });
+    });
+</script>
+#end
+#if($openProximaAccao)
+<script type="text/javascript">
+
+    jQ('#myModallite').modal('show');
+    fillModal('$URLInquerito', '$returnVal');
+
+    jQ('#btnContinuar').click(function () {
+
+        var selectProposta = jQuery("input[name=radio_grupo_accao]:checked").val();
+        if (jQuery.isEmptyObject(selectProposta)) {
+            var node = document.createElement("LI");
+            node.id = "msgerro";
+            var textnode = document.createTextNode("\u00c9 necess\u00e1rio escolher uma ac\u00e7\u00e3o.");
+            node.style.color = "red";
+            node.appendChild(textnode);
+            if (jQuery("#msgerro").length == 0) {
+                document.querySelector("#dataModal").appendChild(node);
+            }
+            return false;
+        }
+
+        jQ('#myModallite').modal('hide');
+
+        jQ('#myModallite').on('hidden.bs.modal', function (e) {
+
+            jQ.ajax({
+                type: 'POST',
+                url: '/SGCCommunicatorWeb/jsp/control/ControlResult.htm',
+                data: { 'idProximaAccao': selectProposta },
+                success: function (data) {
+                    jQ('section#main-section').html(data);
+                }
+            });
+
+        });
+
+    });
+
+    jQ('#btnVoltar').click(function () {
+        jQ('#myModallite').modal('hide');
+
+        jQ('#myModallite').on('hidden.bs.modal', function (e) {
+            window.open('?', '_self');
+        });
+    });
+
+
+</script>
+#end
+<script type="text/javascript">
+
+    function reseleccaoCabecalho(component) {
+        if (component.value == '8' || component.value == '3P') {
+            document.getElementById('form_control_dau_comboReselecao').disabled = false;
+            document.getElementById('form_control_dau_comboReselecao').style.backgroundColor = '#FFFF80';
+        } else {
+            document.getElementById('form_control_dau_comboReselecao').disabled = true;
+            document.getElementById('form_control_dau_comboReselecao').value = '';
+            document.getElementById('form_control_dau_comboReselecao').style.backgroundColor = '';
+        }
+    }
+</script>
+#if($tipoSistemaCaus)
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
+
+<!--TABELA EQUIPAMENTO-->
+<script type="text/javascript">
+
+    function fecharEquipamentos() {
+        document.getElementById('form_headerPanelEquipamento-fields').style.display = 'none';
+        document.getElementById('botaoFecharEquipamentoDiv').style.display = 'none';
+        var divEquipamentos = document.getElementById('divEquipamentos');
+        divEquipamentos.style.display = 'none';
+    }
+
+    function cadastroEquipamentos(idItemTipo, numeroAdicao, tipoControlo, identificadorSSA) {
+
+        document.getElementById('form_headerPanelEquipamento-fields').classList.add('equipamentosHeader');
+        document.querySelector("#form_headerPanelEquipamento-fields").style.removeProperty("display");
+        document.getElementById('identificadorItemTipo').value = identificadorSSA;
+        document.getElementById('numeroItem').value = numeroAdicao;
+        document.getElementById('detItemControlo').value = idItemTipo;
+
+        var divEquipamentos = document.getElementById('divEquipamentos');
+        divEquipamentos.style.display = 'ruby';
+        document.getElementById('botaoFecharEquipamentoDiv').style.display = 'inline';
+
+        var selectElement = document.getElementById('select_form_equipamentos');
+        const tituloElement = document.getElementById('txt_titulo');
+        var titulo = `
+			<h3 style="margin-left:10px ; margin-top:10px" class='panel-title-non-expandable'>EDITAR IDENTIFICADOR Nº ${identificadorSSA}</h3>
+			<div class='panel-heading' style='padding-top: 0px;margin-left:10px ; width: 99%'></div>
+		`
+
+        tituloElement.innerHTML = titulo;
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'recupera_lista_equipamentos';
+        param['tipoControlo'] = tipoControlo;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+                var tabelaEquipamentosElement = document.getElementById('DgitaTable_tabela_equipamentos');
+                tabelaEquipamentosElement.style.display = 'table';
+
+                var lines = response.split('\n');
+
+                selectElement.innerHTML = '';
+
+                lines.forEach(function (line) {
+                    if (line.trim() !== '') {
+                        var parts = line.split('=');
+                        var key = parts[0];
+                        var value = parts[1];
+
+                        var option = document.createElement('option');
+                        option.value = key;
+                        option.text = value;
+
+                        selectElement.appendChild(option);
+                    }
+                });
+            }
+        });
+
+        recuperaEquipamentos(idItemTipo, identificadorSSA, false);
+    }
+
+    function adicionarEquipamento() {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'adicionar_equipamento';
+
+        var selectElement = document.getElementById('select_form_equipamentos');
+        const selectElementSelectedOption = selectElement.options[selectElement.selectedIndex];
+        var identificadorSSA = document.getElementById('identificadorItemTipo');
+
+
+        param['item'] = selectElement.value;
+        param['descricao'] = selectElementSelectedOption.text;
+        const valueInputAdicao = document.getElementById('form_ajaxOpId').value;
+        param['adicao'] = valueInputAdicao.substring(0, valueInputAdicao.length - 1);
+        param['identificadorItemTipo'] = identificadorSSA.value;
+        param['detItemControlo'] = document.getElementById('detItemControlo').value
+
+
+        const tabela = document.getElementById("DgitaTable_tabela_equipamentos").getElementsByTagName('tbody')[0];
+
+        const noResultsRow = tabela.querySelector("tr.txt_data");
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+
+                var id = transport.responseText;
+                if (id !== "") {
+                    countEquipamento = document.getElementById(document.getElementById('detItemControlo').value + '_countEquipamento');
+                    if (countEquipamento) {
+                        let currentCount = parseInt(countEquipamento.textContent, 10);
+                        if (isNaN(currentCount)) {
+                            currentCount = 0;
+                        }
+                        countEquipamento.textContent = currentCount + 1;
+                    }
+                    const newRow = tabela.insertRow();
+                    newRow.id = id;
+                    newRow.innerHTML = `
+			    <td class="align-vertically" style="text-align: left">${identificadorSSA.value}</td>
+			    <td class="align-vertically" style="text-align: left;">${selectElementSelectedOption.text}</td>
+	            <td class="align-vertically" style="text-align: left; width: 40px;">
+			       <a href="#" onclick="removerEquipamento('${id}', this); return false;" class="fa fa-trash-o"></a>
+			    </td>`;
+                }
+
+            }
+        });
+
+    }
+
+    function recuperaEquipamentos(detItemTipo, identificadorSSA, indicador) {
+
+        const tituloElement = document.getElementById('txt_titulo');
+        var titulo = `
+			<h3 style="margin-left:10px ; margin-top:10px" class='panel-title-non-expandable'>EDITAR IDENTIFICADOR Nº ${identificadorSSA}</h3>
+			<div class='panel-heading' style='padding-top: 0px;margin-left:10px ; width: 99%'></div>
+		`
+
+        tituloElement.innerHTML = titulo;
+
+        var param1 = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param1['X-Requested-With'] = 'XMLHttpRequest';
+        param1['op'] = 'listar_equipamentos_cadastrados';
+        param1['item'] = detItemTipo;
+
+        document.getElementById('form_headerPanelEquipamento-fields').classList.add('equipamentosHeader');
+        document.querySelector("#form_headerPanelEquipamento-fields").style.removeProperty("display");
+        document.getElementById('botaoFecharEquipamentoDiv').style.display = 'inline';
+
+        document.getElementById("DgitaTable_tabela_equipamentos").style.display = 'table';
+        const tabelaEquipamentosElement = document.getElementById("DgitaTable_tabela_equipamentos").getElementsByTagName('tbody')[0];
+        tabelaEquipamentosElement.innerHTML = '';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param1,
+            evalScripts: true,
+            onComplete: function (transport) {
+                const response = JSON.parse(transport.responseText);
+                const noResultsRow = tabelaEquipamentosElement.querySelector("tr.txt_data");
+                if (noResultsRow) {
+                    noResultsRow.remove();
+                }
+
+                if (response != "") {
+                    response.forEach(function (record, index) {
+                        const newRow = tabelaEquipamentosElement.insertRow();
+                        const rowClass = index % 2 === 0 ? 'tabela_normal' : 'tabela_alternado';
+                        newRow.id = record.itemEquipamento;
+                        let actions = "";
+                        if (!indicador) {
+                            actions = `<td class="align-vertically" style="text-align: left; width: 40px;">
+					        <a href="#" onclick="removerEquipamento('${record.itemEquipamento}', this); return false;" class="fa fa-trash-o"></a>
+					    </td>`;
+                        } else {
+                            actions = `<td class="align-vertically" style="text-align: left; width: 40px;"></td>`;
+                        }
+                        newRow.innerHTML = `
+					    <tr class="${rowClass}" style="text-align:center;">
+					        <td class="align-vertically" style="text-align: left">${record.identificadorSSA}</td>
+					        <td class="align-vertically" style="text-align: left;">${record.equipamento}</td>
+					        ${actions}
+					    </tr>`;
+                    });
+                } else {
+                    console.error("A resposta não é um array:", response);
+                }
+
+            }
+        });
+    }
+
+    function removerEquipamento(id) {
+
+        var identificadorSSA = document.getElementById('identificadorItemTipo');
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'remover_item_equipamento';
+        param['adicao'] = document.getElementById('numeroItem').value
+        param['id'] = id;
+        param['identificadorItemTipo'] = identificadorSSA.value;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var row = document.getElementById(id);
+                if (row) {
+                    countEquipamento = document.getElementById(document.getElementById('detItemControlo').value + '_countEquipamento');
+                    countEquipamento.textContent = parseInt(countEquipamento.textContent, 10) - 1;
+                    row.parentNode.removeChild(row);
+                }
+
+            }
+        });
+
+    }
+
+    function preencherIdentificadores() {
+        const selectAreaRisco = document.getElementById('form_input_area_risco_form_tipo_item_tipo');
+        const selectAreaRiscoSelectedOption = selectAreaRisco.options[selectAreaRisco.selectedIndex];
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'carregar_dados_identificadores_manuais';
+        param['codigo'] = selectAreaRiscoSelectedOption.value;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+                var lines = response.split('\n');
+                var selectElement = document.getElementById('form_input_identificador_form_tipo_item_tipo');
+                selectElement.innerHTML = '';
+
+                lines.forEach(function (line) {
+                    if (line.trim() !== '') {
+                        var parts = line.split('=');
+                        var key = parts[0];
+                        var value = parts[1];
+
+                        var option = document.createElement('option');
+                        option.value = key;
+                        option.text = value;
+
+                        selectElement.appendChild(option);
+                    }
+                });
+            }
+        });
+
+        document.getElementById('form_input_identificador_form_tipo_item_tipo').disabled = true;
+    }
+
+    function salvarControleTipoItemManual(pk) {
+
+        const identificador = document.getElementById('form_input_identificador_form_tipo_item_tipo').value;
+
+        const areaRiscoElement = document.getElementById('form_input_area_risco_form_tipo_item_tipo');
+        const areaRiscoSelectedOption = areaRiscoElement.options[areaRiscoElement.selectedIndex];
+
+        if (areaRiscoElement.value === '0') return false;
+
+        const analiseRisco = document.getElementById('form_input_analise_risco_form_tipo_item_tipo').value;
+
+        const tipoControloElement = document.getElementById('form_input_tipo_form_tipo_item_tipo');
+        const tipoControloSelectedOption = tipoControloElement.options[tipoControloElement.selectedIndex];
+
+        const resultadoElement = document.getElementById('form_input_resultado_form_tipo_item_tipo');
+        const resultadoSelectedOption = resultadoElement.options[resultadoElement.selectedIndex];
+
+        var objeto = [identificador, areaRiscoElement.value, analiseRisco, tipoControloElement.value, resultadoElement.value];
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'adicionar_controlo_item_tipo_manual';
+        param['pk'] = pk;
+        param['objeto'] = objeto.join("*");
+        param['form_ajaxOpId'] = document.getElementById('form_ajaxOpId').value;
+
+        const tabela = document.getElementById("DgitaTable_tabela_item_tipo_manual").getElementsByTagName('tbody')[0];
+
+        const tabelaEquipamentos = document.getElementById("DgitaTable_tabela_item_tipo_manual_equipamentos").getElementsByTagName('tbody')[0];
+
+        const noResultsRow = tabela.querySelector("tr.txt_data");
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+
+        const noResultsRowEquipamentos = tabelaEquipamentos.querySelector("tr.txt_data");
+        if (noResultsRowEquipamentos) {
+            noResultsRowEquipamentos.remove();
+        }
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var jsonResponse = JSON.parse(transport.responseText);
+                var detItemControlo = jsonResponse.detItemControlo;
+                if (detItemControlo !== '') {
+                    const newRow = tabela.insertRow();
+
+                    let actions = "";
+                    let comum = `<td class="align-vertically" style="text-align: left">${identificador}</td>
+				    <td class="align-vertically" style="text-align: left;">${areaRiscoSelectedOption.text}</td>
+				    <td class="align-vertically" style="text-align: left;">${analiseRisco}</td>
+				    <td class="align-vertically" style="text-align: left;">${tipoControloSelectedOption.text}</td>
+				   `;
+
+                    newRow.id = "row_tabela_item_tipo_manual_" + detItemControlo;
+                    newRow.innerHTML = `
+				    <td class="align-vertically" style="text-align: left; width: 40px;">
+				        <a href="#" onclick="recuperaRegistroManualItemTipo(this,'${detItemControlo}', '${identificador}', '${areaRiscoElement.value}', '${analiseRisco}', '${tipoControloElement.value}', '${resultadoElement.value}'); return false;" class="fa fa-pencil fa-lg"></a>&nbsp;
+				    </td>
+				    ${comum}
+				    <td class="align-vertically" style="text-align: left;">${resultadoSelectedOption.text}</td>
+		            <td class="align-vertically" style="text-align: left; width: 40px;">
+				       <a href="#" onclick="removerItemTipoManual('${detItemControlo}', this); return false;" class="fa fa-trash-o"></a>
+				    </td>`;
+                    const valoresPermitidos = ['20', '30', '40', '42', '44', '50'];
+
+                    if (valoresPermitidos.includes(tipoControloElement.value.trim())) {
+                        const newRowEquipamento = tabelaEquipamentos.insertRow();
+                        newRowEquipamento.id = "row_tabela_item_tipo_manual_equipamento" + detItemControlo;
+                        newRowEquipamento.innerHTML = `
+							${comum}
+							<td class="align-vertically" style="text-align: left; width: 40px;">
+						        <a href="#" onclick="cadastroEquipamentosItemManual('${detItemControlo}', '${pk}', '${tipoControloElement.value}', '${identificador}'); return false;" class="fa fa-pencil fa-lg"></a>&nbsp;<span id='${detItemControlo}_countEquipamentoItemManual'></span>
+						    </td>
+						   `;
+                    }
+                }
+            }
+        });
+    }
+
+    function recuperaRegistroManualItemTipo(element, pk, identificador, areaRisco, analiseRisco, tipoControlo, resultado) {
+        document.getElementById('btCancelarRegistroItemTipo').style.display = 'inline-flex';
+        var botaoAlterar = document.getElementById('btRegistroItemTipo');
+        botaoAlterar.value = 'Alterar';
+        botaoAlterar.onclick = function () {
+            alterarItemTipoManual(element, pk);
+        };
+
+        document.getElementById('form_input_identificador_form_tipo_item_tipo').value = identificador;
+        preencherIdentificadores();
+        document.getElementById('form_input_area_risco_form_tipo_item_tipo').value = areaRisco;
+        document.getElementById('form_input_tipo_form_tipo_item_tipo').value = tipoControlo;
+        document.getElementById('form_input_resultado_form_tipo_item_tipo').value = resultado;
+        document.getElementById('identificadorItemTipo').value = identificador;
+    }
+
+    function alterarItemTipoManual(element, pk) {
+        var linha = element.closest('tr');
+        if (linha) {
+            linha.remove();
+            var linhaClonada = document.querySelector('#DgitaTable_tabela_item_tipo_manual_equipamentos tr[id="row_tabela_item_tipo_manual_equipamento' + pk + '"]');
+            if (linhaClonada) {
+                linhaClonada.remove();
+            }
+        }
+        salvarControleTipoItemManual(pk);
+        cancelarEdicaoItemTipoManual();
+    }
+
+    function cancelarEdicaoItemTipoManual() {
+        var botaoCancelar = document.getElementById("btCancelarRegistroItemTipo");
+        botaoCancelar.style.display = "none";
+
+        var botao = document.getElementById("btRegistroItemTipo");
+        botao.value = "Adicionar";
+
+        botao.onclick = function () {
+            salvarControleTipoItemManual();
+        };
+
+    }
+
+    function removerItemTipoManual(pk, element) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'remover_controlo_item_tipo_manual';
+        param['form_ajaxOpId'] = document.getElementById('form_ajaxOpId').value;
+        param['pk'] = pk;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var linha = element.closest('tr');
+                if (linha) {
+                    linha.remove();
+                    var linhaClonada = document.querySelector('#DgitaTable_tabela_item_tipo_manual_equipamentos tr[id="row_tabela_item_tipo_manual_equipamento' + pk + '"]');
+                    if (linhaClonada) {
+                        linhaClonada.remove();
+                    }
+                }
+            }
+        });
+    }
+
+    function base64ToBlob(base64, contentType) {
+        const byteCharacters = atob(base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: contentType });
+    }
+
+    function visualizarDocumento(idFilenet) {
+        const numControlo = document.getElementById('form_idControlo').value;
+        var url = '/SGCCommunicatorWeb/CausServlet?numControlo=' + numControlo + '&op=obter_documento_filenet&idDoc=' + idFilenet;
+        window.location.href = url;
+    }
+
+    function editarIdentificacaoSelo(id, cabecalho, selos, selagemMeioTransporte, qtdSelos, identificacao, motivo) {
+        document.getElementById('form_cabecalhoAdicao').value = cabecalho;
+        document.getElementById('form_selos').value = selos;
+        document.getElementById('form_selagemMeioTransporte').value = selagemMeioTransporte;
+        document.getElementById('form_numeroSelos').value = qtdSelos;
+        document.getElementById('form_identificacaoSelos').value = identificacao;
+        document.getElementById('form_naoSelagemMotivo').value = motivo;
+        var botaoCancelar = document.getElementById("btCancelarAlteracaoSelo");
+        botaoCancelar.style.display = "inline-block";
+        var botaoAdicionar = document.getElementById("addInformacaoSelo");
+        botaoAdicionar.value = "Alterar";
+
+        botaoAdicionar.onclick = function () {
+            alterarIdentificacaoSelo(id);
+        };
+    }
+
+    function alterarIdentificacaoSelo(id) {
+
+        var cabecalho = document.getElementById('form_cabecalhoAdicao').value;
+        var selos = document.getElementById('form_selos').value;
+        var selagemMeioTransporte = document.getElementById('form_selagemMeioTransporte').value;
+        var qtdSelos = document.getElementById('form_numeroSelos').value;
+        var identificacao = document.getElementById('form_identificacaoSelos').value;
+        var motivo = document.getElementById('form_naoSelagemMotivo').value;
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'alterar_identificacao_selos';
+
+        var dados = [
+            cabecalho,
+            selos,
+            selagemMeioTransporte,
+            qtdSelos,
+            identificacao,
+            motivo
+        ];
+
+        param['objeto'] = dados.join("*");
+        console.log("");
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+                const linha = document.getElementById(id);
+
+                linha.cells[0].innerHTML = `<a href="#" onclick="editarIdentificacaoSelo('${id}','${cabecalho}', '${selos}', '${selagemMeioTransporte}', '${qtdSelos}', '${identificacao}', '${motivo}'); return false;" class="fa fa-edit"></a>`;
+                linha.cells[1].innerText = cabecalho;
+                linha.cells[2].innerText = selos;
+                linha.cells[3].innerText = selagemMeioTransporte;
+                linha.cells[4].innerText = qtdSelos;
+                linha.cells[5].innerText = identificacao;
+                linha.cells[6].innerText = motivo;
+
+                cancelarAlteracaoSelo();
+            }
+        });
+
+    }
+
+    function addLinhaIdentificacaoSelo(cabecalho, selos, meioTransporte, numSelos, identificacaoSelos, motivoNaoSelagem) {
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'adicionar_identificacao_selos';
+        var objetoArray = [
+            cabecalho,
+            selos,
+            meioTransporte,
+            numSelos,
+            identificacaoSelos,
+            motivoNaoSelagem
+        ];
+        param['objeto'] = objetoArray.join("*");
+
+        //var tabela = document.getElementById('DgitaTable_tabela_identificacao_selos');
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var id = transport.responseText;
+
+                const tabela = document.getElementById("DgitaTable_tabela_identificacao_selos").getElementsByTagName('tbody')[0];
+
+                const linhaSemResultados = tabela.querySelector(".txt_data");
+                if (linhaSemResultados) {
+                    tabela.removeChild(linhaSemResultados);
+                }
+
+                const novaLinha = tabela.insertRow();
+
+                novaLinha.id = "row_tabela_identificacao_selos_" + tabela.rows.length;
+                novaLinha.className = "tabela_alternado";
+                novaLinha.style.textAlign = "center";
+                novaLinha.setAttribute("onmouseover", `enterLine('${novaLinha.id}')`);
+                novaLinha.setAttribute("onmouseout", `leaveLine('${novaLinha.id}')`);
+
+                // Coluna para o ícone de editar
+                let celulaEditar = novaLinha.insertCell(0);
+                celulaEditar.className = "null align-vertically";
+                celulaEditar.style.textAlign = "left";
+                celulaEditar.innerHTML = `<a href="#" onclick="editarIdentificacaoSelo('${novaLinha.id}','${cabecalho}', '${selos}', '${meioTransporte}', '${numSelos}', '${identificacaoSelos}', '${motivoNaoSelagem}'); return false;" class="fa fa-edit"></a>`;
+
+                // Coluna Cabeçalho/Adição
+                let celulaCabecalho = novaLinha.insertCell(1);
+                celulaCabecalho.className = "null align-vertically";
+                celulaCabecalho.style.textAlign = "left";
+                celulaCabecalho.innerText = cabecalho;
+
+                // Coluna Selos
+                let celulaSelos = novaLinha.insertCell(2);
+                celulaSelos.className = "null align-vertically";
+                celulaSelos.style.textAlign = "left";
+                celulaSelos.innerText = selos;
+
+                // Coluna Selagem Meio Transporte
+                let celulaMeioTransporte = novaLinha.insertCell(3);
+                celulaMeioTransporte.className = "null align-vertically";
+                celulaMeioTransporte.style.textAlign = "left";
+                celulaMeioTransporte.innerText = meioTransporte;
+
+                // Coluna Nº Selos
+                let celulaNumSelos = novaLinha.insertCell(4);
+                celulaNumSelos.className = "null align-vertically";
+                celulaNumSelos.style.textAlign = "left";
+                celulaNumSelos.innerText = numSelos;
+
+                // Coluna Identificação dos Selos
+                let celulaIdentificacaoSelos = novaLinha.insertCell(5);
+                celulaIdentificacaoSelos.className = "null align-vertically";
+                celulaIdentificacaoSelos.style.textAlign = "left";
+                celulaIdentificacaoSelos.innerText = identificacaoSelos;
+
+                // Coluna Não selagem/motivo
+                let celulaMotivoNaoSelagem = novaLinha.insertCell(6);
+                celulaMotivoNaoSelagem.className = "null align-vertically";
+                celulaMotivoNaoSelagem.style.textAlign = "left";
+                celulaMotivoNaoSelagem.innerText = motivoNaoSelagem;
+
+                let celulaExcluir = novaLinha.insertCell(7);
+                celulaExcluir.className = "null align-vertically";
+                celulaExcluir.style.textAlign = "left";
+                celulaExcluir.innerHTML = `<a href="#" onclick="excluirIdentificacaoSelo('${novaLinha.id}'); return false;" class="fa fa-trash-o"></a>`;
+
+            }
+        });
+
+        document.getElementById('form_cabecalhoAdicao').value = '';
+        document.getElementById('form_selos').value = '';
+        document.getElementById('form_selagemMeioTransporte').value = '';
+        document.getElementById('form_numeroSelos').value = '';
+        document.getElementById('form_identificacaoSelos').value = '';
+        document.getElementById('form_naoSelagemMotivo').value = '';
+    }
+
+    function excluirIdentificacaoSelo(idLinha) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'remover_identificacao_selo';
+        param['idLinha'] = idLinha;
+
+        var row = document.getElementById(idLinha);
+        row.remove();
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+            }
+        });
+    }
+
+    function excluirDocumentoAdicional(idLinha) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'remover_documento_adicional';
+        param['idLinha'] = idLinha;
+
+        var row = document.getElementById('row_controlo_documentos_adicionais_tabela_' + (idLinha - 1));
+        row.remove();
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+            }
+        });
+
+    }
+
+    function editarDadosAdicional(idLinha) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['ajaxOp'] = 'tratar_edicao_documento_adicional';
+        param['idLinha'] = idLinha;
+
+        new Ajax.Updater('form', '/SGCCommunicatorWeb/jsp/control/ControlResult.htm', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+            }
+        });
+    }
+
+    function cancelarEdicao() {
+        var botaoCancelar = document.getElementById("cancelarAlteracao");
+        botaoCancelar.style.display = "none";
+
+        var botao = document.getElementById("addInformacao");
+        botao.value = "Adicionar";
+
+        var selectResultado = document.getElementById("form_comboValoresPorSistema");
+        selectResultado.value = '----';
+        getCodigos();
+
+        document.getElementById('form_control_add_input_numero_referencia').value = '';
+        document.getElementById('form_control_add_input_descricao').value = '';
+
+        botao.onclick = function () {
+            adicionarLinhaInfomacaoAdicional();
+        };
+
+    }
+
+    function cancelarAlteracaoSelo() {
+        var botaoCancelar = document.getElementById("btCancelarAlteracaoSelo");
+        botaoCancelar.style.display = "none";
+
+        var botao = document.getElementById("addInformacaoSelo");
+        botao.value = "Adicionar";
+
+        document.getElementById('form_cabecalhoAdicao').value = '';
+        document.getElementById('form_selos').value = '-1'
+        document.getElementById('form_selagemMeioTransporte').value = '-1'
+        document.getElementById('form_numeroSelos').value = '';
+        document.getElementById('form_identificacaoSelos').value = '';
+        document.getElementById('form_naoSelagemMotivo').value = ''
+
+        botao.onclick = function () {
+            adicionarIdentificacaoSelo();
+        };
+
+    }
+
+    function recuperaLinhaTipoItem(idDetItemControlo) {
+
+        document.getElementById('form_id_row').value = idDetItemControlo;
+
+        document.getElementById('select-' + idDetItemControlo).style.display = 'inline';
+
+        const allSelects = document.querySelectorAll("[id^='select-']");
+        allSelects.forEach(select => {
+            if (select.id !== 'select-' + idDetItemControlo) {
+                select.style.display = 'none';
+            }
+        });
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'recuperar_lista_resultado_controlo';
+        var selectElement = document.getElementById('select-' + idDetItemControlo);
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+                var lines = response.split('\n');
+
+                selectElement.innerHTML = '';
+                selectElement.onchange = function () {
+                    salvarControleTipoItem(idDetItemControlo);  // Chama a função passando o tipo e o valor selecionado
+                };
+                lines.forEach(function (line) {
+                    if (line.trim() !== '') {
+                        var parts = line.split('=');
+                        var key = parts[0];
+                        var value = parts[1];
+
+                        var option = document.createElement('option');
+                        option.value = key;
+                        option.text = value;
+
+                        selectElement.appendChild(option);
+                    }
+                });
+
+                const resultado = document.getElementById('txtResult' + idDetItemControlo).textContent;
+                if (resultado) {
+                    const resultValue = resultado.split('-');
+                    if (resultValue) {
+                        const finalResultValue = resultValue[0].trim();
+                        selectElement.value = finalResultValue;
+                    }
+                }
+            }
+        });
+    }
+
+    function salvarControleTipoItem(indiceTipo) {
+
+        var idControlo = document.getElementById('form_idControlo').value;
+        var idRow = document.getElementById('form_id_row').value;
+        var select = document.getElementById("select-" + indiceTipo);
+        var optionSelecionada = select.options[select.selectedIndex];
+        var idTdAlterar = "txtResult" + indiceTipo;
+        if (optionSelecionada.value == '-1') {
+            document.getElementById(idTdAlterar).textContent = '';
+        } else {
+            document.getElementById(idTdAlterar).textContent = optionSelecionada.text;
+        }
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'tratar_resultado_adicao';
+        param['idLinha'] = idRow;
+        param['resultado'] = optionSelecionada.text;
+        param['idControlo'] = idControlo;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+            }
+        });
+
+        document.getElementById('select-' + indiceTipo).style.display = 'none';
+
+    }
+
+    function adicionarLinhaInfomacaoAdicional() {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['ajaxOp'] = 'documentos';
+        param['subOp'] = 'addInfo';
+
+        new Ajax.Updater('form', '/SGCCommunicatorWeb/jsp/control/ControlResult.htm', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                return false
+            }
+        });
+
+    }
+
+    function alterarLinhaInfomacaoAdicional(idLinha) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['ajaxOp'] = 'documentos';
+        param['subOp'] = 'alterarInfo';
+        param['ajaxOpId'] = idLinha;
+
+        new Ajax.Updater('form', '/SGCCommunicatorWeb/jsp/control/ControlResult.htm', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                return false
+            }
+        });
+
+    }
+
+    function getCodigos() {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['ajaxOp'] = 'documentos';
+        param['subOp'] = 'carregaCodigos';
+        param['op'] = 'tratar_selecao_acl';
+
+        param['clSelecionada'] = document.getElementById('form_comboValoresPorSistema').value;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+                var lines = response.split('\n');
+
+                var selectElement = document.getElementById('form_comboCodigosPorACL');
+                selectElement.innerHTML = '';
+
+                lines.forEach(function (line) {
+                    if (line.trim() !== '') {
+                        var parts = line.split('=');
+                        var key = parts[0];
+                        var value = parts[1];
+
+                        var option = document.createElement('option');
+                        option.value = key;
+                        option.text = value;
+
+                        selectElement.appendChild(option);
+                    }
+                });
+            }
+        });
+    }
+
+
+    function adicionarIdentificacaoSelo() {
+
+        addLinhaIdentificacaoSelo(
+            document.getElementById('form_cabecalhoAdicao').value,
+            document.getElementById('form_selos').value,
+            document.getElementById('form_selagemMeioTransporte').value,
+            document.getElementById('form_numeroSelos').value,
+            document.getElementById('form_identificacaoSelos').value,
+            document.getElementById('form_naoSelagemMotivo').value
+        );
+    }
+
+    function carregaControloTipoItem(item, controlo) {
+        jQ('#aguarde-DIV').show();
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['numeroControlo'] = controlo;
+        param['item'] = item;
+        param['op'] = 'carrega_controlo_tipo_item';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+
+                var response = transport.responseText;
+                insereDadosControloTipoItem(response, item, controlo);
+
+            }
+        });
+    }
+
+    function insereDadosControloTipoItem(registros, item, controlo) {
+        if (!document.getElementById('container_detalhe_item_tipo')) {
+            const divDetalheControloTipoItem = document.createElement('div');
+            divDetalheControloTipoItem.style.marginTop = '88px';
+            divDetalheControloTipoItem.id = 'container_detalhe_item_tipo';
+            const tabelaPrincipal = document.getElementById('paginatorDIV_tabela_principal');
+            tabelaPrincipal.insertAdjacentElement('afterend', divDetalheControloTipoItem);
+        }
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['numeroControlo'] = controlo;
+        param['op'] = 'recupera_dados_cabecalho_tabela_tipo_item';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+                if (response.includes(';')) {
+                    var headers = response.split(';');
+                    var a = headers[0];
+                    var b = headers[1];
+                    var c = headers[2];
+                    var d = headers[3];
+                    var e = headers[4];
+                    var f = headers[5];
+
+                    let tabelaHTML = `
+		                <div class='panel-heading' style='padding-top: 1px'>
+		                    <h3 class='panel-title-non-expandable'>DETALHE ADIÇÃO nº${item}</h3>
+		                </div>
+		                <table id="DgitaTable_tabela_detalhes" cellspacing="0" cellpadding="2" class="table table-striped-blue table-hover" align="center" style="width: 100%;">
+		                    <thead>
+		                        <tr>
+		                            <th></th>
+		                            <th>${a}</th> 
+		                            <th>${b}</th> 
+		                            <th>${c}</th>
+		                            <th>${d}</th>
+		                            <th>${e}</th>
+		                            <th>${f}</th> 
+		                        </tr>
+		                    </thead>
+		                    <tbody class="tbody-border-primary">`;
+
+                    let detalhes = JSON.parse(registros);
+
+                    detalhes.forEach(function (detalhe, index) {
+                        const rowClass = index % 2 === 0 ? 'tabela_alternado' : 'tabela_normal';
+                        tabelaHTML += `<tr id="row_tabela_detalhes_${index}" class="${rowClass}" onmouseover="enterLine('row_tabela_detalhes_${index}');" onmouseout="leaveLine('row_tabela_detalhes_${index}');" style="text-align:center;">`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left; width: 40px;">`;
+                        tabelaHTML += `<a href="#" onclick="detalhaControloTipoItem('${detalhe.detItemControlo}', '${detalhe.identificadorSSA}'); return false;" class="fa fa-eye fa-lg"></a>`;
+                        tabelaHTML += `</td>`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left; width:310px;">${detalhe.analiseRisco}</td>`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.identificadorSSA}</td>`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.areaRisco}</td>`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.riscoComum}</td>`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.produtoInfoRisco}</td>`;
+                        tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.tipoControlo}</td>`;
+                        tabelaHTML += '</tr>';
+                    });
+
+                    tabelaHTML += '</tbody>';
+                    tabelaHTML += '</table>';
+                    document.getElementById('container_detalhe_item_tipo').innerHTML = tabelaHTML;
+                    document.getElementById('detalhe_item_tipo').innerHTML = "";
+                }
+            }
+        });
+
+        jQ('#aguarde-DIV').hide();
+    }
+
+
+    function detalhaControloTipoItem(id, identificador) {
+        jQ('#aguarde-DIV').show();
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['id'] = id;
+        param['op'] = 'detalha_controlo_tipo_item';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+                insereDetalheControloTipoItem(response, identificador);
+            }
+        });
+    }
+
+    function insereDetalheControloTipoItem(registros, identificador) {
+
+        if (!document.getElementById('detalhe_item_tipo')) {
+            const detalhe_item_tipo = document.createElement('div');
+            detalhe_item_tipo.style.marginTop = '61px';
+            detalhe_item_tipo.id = 'detalhe_item_tipo';
+
+            const anterior = document.getElementById('container_detalhe_item_tipo');
+            anterior.insertAdjacentElement('afterend', detalhe_item_tipo);
+        }
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'recupera_dados_cabecalho_tabela_detalhe_item_tipo';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+
+                var response = transport.responseText;
+                if (response.includes(';')) {
+                    var headers = response.split(';');
+                    var a = headers[0];
+                    var b = headers[1];
+
+                    let tabelaHTML = `<div class='panel-heading' style='padding-top: 1px'><h3 class='panel-title-non-expandable'>DETALHE IDENTIFICADOR Nº${identificador}</h3></div>
+				    <table  cellspacing="0" cellpadding="2" class="table table-striped-blue table-hover" align="center" style="width: 100%;">
+					   	<thead>
+						   <tr>
+							   <th>${a}</th> 
+							   <th>${b}</th> 
+						   </tr>
+					   	</thead>
+				   		<tbody class="tbody-border-primary">`;
+
+                    let detalhe = JSON.parse(registros);
+
+                    tabelaHTML += `<tr class="tabela_normal" style="text-align:center;">`;
+                    tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.orientacaoAnalise}</td>`;
+                    tabelaHTML += `<td class="align-vertically" style="text-align: left;">${detalhe.observacoes}</td>`;
+                    tabelaHTML += '</tr>';
+
+                    tabelaHTML += '</tbody>';
+                    tabelaHTML += '</table>';
+
+                    document.getElementById('detalhe_item_tipo').innerHTML = tabelaHTML;
+
+                }
+            }
+        });
+        jQ('#aguarde-DIV').hide();
+    }
+
+    function conferir() {
+
+        var checkboxes = document.querySelectorAll('.checkbox-adicoes');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = true;
+        });
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['idControlo'] = document.getElementById('form_idControlo').value;
+        param['op'] = 'conferir_todos_os_documentos';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+            }
+        });
+    }
+
+    function desconferir() {
+        // Desmarca todos os checkboxes de documentos
+        var checkboxes = document.querySelectorAll('.checkbox-adicoes');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+        });
+
+        // Serializa o formulário e prepara os parâmetros
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['idControlo'] = document.getElementById('form_idControlo').value;
+        param['op'] = 'desconferir_todos_os_documentos';
+
+        // Envia a requisição AJAX para o servlet
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+            }
+        });
+    }
+
+    function conferirSelos() {
+        // Marca todos os checkboxes de selos visualmente
+        var checkboxes = document.querySelectorAll('.checkbox-selos');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = true;
+        });
+
+        // Chama o backend para atualizar na sessão
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['idControlo'] = document.getElementById('form_idControlo').value;
+        param['op'] = 'conferir_todos_os_selos';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+                //jQ('#tabela_selos').load(location.href + " #tabela_selos > *");
+            }
+        });
+    }
+
+    function desconferirSelos() {
+        // 1. Atualiza visualmente: desmarca todos os checkboxes dos selos
+        var checkboxes = document.querySelectorAll('.checkbox-selos');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+        });
+
+        // 2. Serializa o formulário e define a operação para "desconferir"
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['idControlo'] = document.getElementById('form_idControlo').value;
+        param['op'] = 'desconferir_todos_os_selos';
+
+        // 3. Envia a chamada AJAX para o backend para atualizar o estado dos selos na sessão
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+                // 4. Atualiza a área visual da tabela de selos (assumindo que o container tenha o ID "tabela_selos")
+                //jQ('#tabela_selos').load(location.href + " #tabela_selos > *");
+            }
+        });
+    }
+
+    function cadastroEquipamentosItemManual(idItemTipo, numeroAdicao, tipoControlo, identificadorSSA) {
+
+        document.getElementById('form_headerPanelEquipamentoManuais-fields').classList.add('equipamentosHeader');
+        document.querySelector("#form_headerPanelEquipamentoManuais-fields").style.removeProperty("display");
+        document.getElementById('identificadorItemTipoItemManuais').value = identificadorSSA;
+        document.getElementById('numeroItem').value = numeroAdicao;
+        document.getElementById('detItemControlo').value = idItemTipo;
+
+        var divEquipamentos = document.getElementById('divEquipamentosItemsManuais');
+        divEquipamentos.style.display = 'ruby';
+        document.getElementById('botaoFecharEquipamentoItemsManuaisDiv').style.display = 'inline';
+
+        var selectElement = document.getElementById('select_form_equipamentos_items_manuais');
+        const tituloElement = document.getElementById('txt_tituloItemsManuais');
+        var titulo = `
+			<h3 style="margin-left:10px ; margin-top:10px" class='panel-title-non-expandable'>EDITAR IDENTIFICADOR Nº ${identificadorSSA}</h3>
+			<div class='panel-heading' style='padding-top: 0px;margin-left:10px ; width: 99%'></div>
+		`
+
+        tituloElement.innerHTML = titulo;
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'recupera_lista_equipamentos';
+        param['tipoControlo'] = tipoControlo;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+
+                var tabelaEquipamentosElement = document.getElementById('DgitaTable_tabela_equipamentos_items_manuais');
+                tabelaEquipamentosElement.style.display = 'table';
+
+                var lines = response.split('\n');
+
+                selectElement.innerHTML = '';
+
+                lines.forEach(function (line) {
+                    if (line.trim() !== '') {
+                        var parts = line.split('=');
+                        var key = parts[0];
+                        var value = parts[1];
+
+                        var option = document.createElement('option');
+                        option.value = key;
+                        option.text = value;
+
+                        selectElement.appendChild(option);
+                    }
+                });
+            }
+        });
+
+        recuperaEquipamentosItemsManuais(idItemTipo, identificadorSSA, false);
+    }
+
+    function recuperaEquipamentosItemsManuais(detItemTipo, identificadorSSA, indicador) {
+
+        const tituloElementItemManual = document.getElementById('txt_tituloItemsManuais');
+        var titulo = `
+			<h3 style="margin-left:10px ; margin-top:10px" class='panel-title-non-expandable'>EDITAR IDENTIFICADOR Nº ${identificadorSSA}</h3>
+			<div class='panel-heading' style='padding-top: 0px;margin-left:10px ; width: 99%'></div>
+		`
+
+        tituloElementItemManual.innerHTML = titulo;
+
+        var param1 = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param1['X-Requested-With'] = 'XMLHttpRequest';
+        param1['op'] = 'listar_equipamentos_items_manuais_cadastrados';
+        const valueInputAdicao = document.getElementById('form_ajaxOpId').value;
+        param1['adicao'] = valueInputAdicao.substring(0, valueInputAdicao.length - 1);
+        param1['item'] = detItemTipo;
+
+        document.getElementById('form_headerPanelEquipamentoManuais-fields').classList.add('equipamentosHeader');
+        document.querySelector("#form_headerPanelEquipamentoManuais-fields").style.removeProperty("display");
+        document.getElementById('botaoFecharEquipamentoItemsManuaisDiv').style.display = 'inline';
+
+        document.getElementById("DgitaTable_tabela_equipamentos_items_manuais").style.display = 'table';
+        const tabelaEquipamentosElement = document.getElementById("DgitaTable_tabela_equipamentos_items_manuais").getElementsByTagName('tbody')[0];
+        tabelaEquipamentosElement.innerHTML = '';
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param1,
+            evalScripts: true,
+            onComplete: function (transport) {
+                const response = JSON.parse(transport.responseText);
+                const noResultsRow = tabelaEquipamentosElement.querySelector("tr.txt_data");
+                if (noResultsRow) {
+                    noResultsRow.remove();
+                }
+
+                if (response != "") {
+                    response.forEach(function (record, index) {
+                        const newRow = tabelaEquipamentosElement.insertRow();
+                        const rowClass = index % 2 === 0 ? 'tabela_normal' : 'tabela_alternado';
+                        newRow.id = record.itemEquipamento;
+                        let actions = "";
+                        if (!indicador) {
+                            actions = `<td class="align-vertically" style="text-align: left; width: 40px;">
+					        <a href="#" onclick="removerEquipamentoManual('${record.itemEquipamento}', this); return false;" class="fa fa-trash-o"></a>
+					    </td>`;
+                        } else {
+                            actions = `<td class="align-vertically" style="text-align: left; width: 40px;"></td>`;
+                        }
+                        newRow.innerHTML = `
+					    <tr class="${rowClass}" style="text-align:center;">
+					        <td class="align-vertically" style="text-align: left">${record.identificadorSSA}</td>
+					        <td class="align-vertically" style="text-align: left;">${record.equipamento}</td>
+					        ${actions}
+					    </tr>`;
+                    });
+                } else {
+                    console.error("A resposta não é um array:", response);
+                }
+
+            }
+        });
+    }
+
+    function fecharEquipamentosItemsManuais() {
+        document.getElementById('form_headerPanelEquipamentoManuais-fields').style.display = 'none';
+        document.getElementById('botaoFecharEquipamentoItemsManuaisDiv').style.display = 'none';
+        var divEquipamentos = document.getElementById('divEquipamentosItemsManuais');
+        divEquipamentos.style.display = 'none';
+    }
+
+    function adicionarEquipamentoItemsManuais() {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'adicionar_equipamento_item_manual';
+
+        var selectElement = document.getElementById('select_form_equipamentos_items_manuais');
+        const selectElementSelectedOption = selectElement.options[selectElement.selectedIndex];
+        var identificadorSSA = document.getElementById('identificadorItemTipoItemManuais');
+
+
+        param['item'] = selectElement.value;
+        param['descricao'] = selectElementSelectedOption.text;
+        const valueInputAdicao = document.getElementById('form_ajaxOpId').value;
+        param['adicao'] = valueInputAdicao.substring(0, valueInputAdicao.length - 1);
+        param['identificadorItemTipo'] = identificadorSSA.value;
+        param['detItemControlo'] = document.getElementById('detItemControlo').value
+
+
+        const tabela = document.getElementById("DgitaTable_tabela_equipamentos_items_manuais").getElementsByTagName('tbody')[0];
+
+        const noResultsRow = tabela.querySelector("tr.txt_data");
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+
+                var id = transport.responseText;
+                if (id !== "") {
+                    countEquipamento = document.getElementById(document.getElementById('detItemControlo').value + '_countEquipamentoItemManual');
+                    if (countEquipamento) {
+                        let currentCount = parseInt(countEquipamento.textContent, 10);
+                        if (isNaN(currentCount)) {
+                            currentCount = 0;
+                        }
+                        countEquipamento.textContent = currentCount + 1;
+                    }
+                    const newRow = tabela.insertRow();
+                    newRow.id = id;
+                    newRow.innerHTML = `
+			    <td class="align-vertically" style="text-align: left">${identificadorSSA.value}</td>
+			    <td class="align-vertically" style="text-align: left;">${selectElementSelectedOption.text}</td>
+	            <td class="align-vertically" style="text-align: left; width: 40px;">
+			       <a href="#" onclick="removerEquipamentoManual('${id}', this); return false;" class="fa fa-trash-o"></a>
+			    </td>`;
+                }
+
+            }
+        });
+
+    }
+
+    function removerEquipamentoManual(id) {
+
+        var identificadorSSA = document.getElementById('identificadorItemTipo');
+
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['op'] = 'remover_item_equipamento_manual';
+        const valueInputAdicao = document.getElementById('form_ajaxOpId').value;
+        param['adicao'] = valueInputAdicao.substring(0, valueInputAdicao.length - 1);
+        param['id'] = id;
+        param['identificadorItemTipo'] = identificadorSSA.value;
+
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var row = document.getElementById(id);
+                if (row) {
+                    countEquipamento = document.getElementById(document.getElementById('detItemControlo').value + '_countEquipamentoItemManual');
+                    countEquipamento.textContent = parseInt(countEquipamento.textContent, 10) - 1;
+                    row.parentNode.removeChild(row);
+                }
+
+            }
+        });
+
+    }
+
+
+</script>
+#end
+
+<script type="text/javascript">
+
+
+    jQ('#btnFechar').click(function () {
+        jQ('#myModallite').modal('hide');
+
+        jQ('#myModallite').on('hidden.bs.modal', function (e) {
+            window.open('?', '_self');
+        });
+    });
+
+    function reseleccaoAdicao(component) {
+        if (component.value == '8' || component.value == '3P') {
+            document.getElementById('form_control_add_comboControloReSelecao').disabled = false;
+        } else {
+            document.getElementById('form_control_add_comboControloReSelecao').disabled = true;
+            document.getElementById('form_control_add_comboControloReSelecao').value = '';
+        }
+
+
+    }
+
+    function fundamentoAdicao(component) {
+        if (component.value == '3P') {
+            document.getElementById('form_txt_fundamento_form_item_tipo').disabled = false;
+            document.getElementById('form_txt_fundamento_form_item_tipo').classList.remove("disabled");
+        } else {
+            document.getElementById('form_txt_fundamento_form_item_tipo').disabled = true;
+            document.getElementById('form_txt_fundamento_form_item_tipo').classList.add("disabled");
+            document.getElementById('form_txt_fundamento_form_item_tipo').value = '';
+        }
+
+
+    }
+
+    function meioAutAferido(flag) {
+
+        if (flag == 'sim') {
+
+            document.getElementById('form_geral_phy_radioMeios1_2_1').disabled = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_2').disabled = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_3').disabled = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_4').disabled = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_5').disabled = false;
+            document.getElementById('geral_phy_outros').disabled = false;
+
+        } else if (flag == 'nao') {
+
+            document.getElementById('form_geral_phy_radioMeios1_2_1').checked = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_1').disabled = true;
+            document.getElementById('form_geral_phy_radioMeios1_2_2').checked = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_2').disabled = true;
+            document.getElementById('form_geral_phy_radioMeios1_2_3').checked = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_3').disabled = true;
+            document.getElementById('form_geral_phy_radioMeios1_2_4').checked = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_4').disabled = true;
+            document.getElementById('form_geral_phy_radioMeios1_2_5').checked = false;
+            document.getElementById('form_geral_phy_radioMeios1_2_5').disabled = true;
+            document.getElementById('geral_phy_outros').value = '';
+            document.getElementById('geral_phy_outros').disabled = true;
+
+        }
+    }
+
+    function meiosOutrosDesc(flag) {
+
+        if (flag == 'true') {
+            document.getElementById('geral_phy_outros').disabled = false;
+        } else if (flag == 'false') {
+            document.getElementById('geral_phy_outros').value = '';
+            document.getElementById('geral_phy_outros').disabled = true;
+        }
+    }
+
+    function desativaConseqIrr(resultado) {
+
+        if (resultado.value == '6' || resultado.value == '4' || resultado.value == 'B1' || resultado.value == 'A4') {
+
+            if (resultado.id == "form_control_dau_comboResultadoControlo") {
+
+                document.getElementById('form_control_dau_irr_merc_ent').disabled = false;
+                document.getElementById('form_control_dau_irr_merc_sit').disabled = false;
+                document.getElementById('form_control_dau_conseq_financ_tipo_mont').disabled = false;
+                document.getElementById('form_control_dau_conseq_financ_natureza').disabled = false;
+                document.getElementById('form_control_dau_conseq_financ_codRub').disabled = false;
+                document.getElementById('form_control_dau_conseq_financ_valor').disabled = false;
+
+            } else {
+
+                document.getElementById('form_control_irr_merc_ent_item').disabled = false;
+                document.getElementById('form_control_irr_merc_sit_item').disabled = false;
+                document.getElementById('form_control_add_conseq_financ_tipo_mont').disabled = false;
+                document.getElementById('form_control_add_conseq_financ_natureza').disabled = false;
+                document.getElementById('form_control_add_conseq_financ_codRub').disabled = false;
+                document.getElementById('form_control_add_conseq_financ_valor').disabled = false;
+
+            }
+
+        } else {
+
+            if (resultado.id == "form_control_dau_comboResultadoControlo") {
+
+                document.getElementById('form_control_dau_irr_merc_ent').disabled = true;
+                document.getElementById('form_control_dau_irr_merc_ent').value = "BSTVEAD0"
+                document.getElementById('form_control_dau_irr_merc_sit').disabled = true;
+                document.getElementById('form_control_dau_irr_merc_sit').value = "BSTCSLM0"
+                document.getElementById('form_control_dau_conseq_financ_tipo_mont').disabled = true;
+                document.getElementById('form_control_dau_conseq_financ_tipo_mont').value = "BSTCTMT0"
+                document.getElementById('form_control_dau_conseq_financ_natureza').disabled = true;
+                document.getElementById('form_control_dau_conseq_financ_natureza').value = "BSTCNT0"
+                document.getElementById('form_control_dau_conseq_financ_codRub').disabled = true;
+                document.getElementById('form_control_dau_conseq_financ_codRub').value = "BSTVRUB0"
+                document.getElementById('form_control_dau_conseq_financ_valor').disabled = true;
+                document.getElementById('form_control_dau_conseq_financ_valor').value = ""
+
+            } else {
+
+                document.getElementById('form_control_irr_merc_ent_item').disabled = true;
+                document.getElementById('form_control_irr_merc_ent_item').value = "BSTVEAD0"
+                document.getElementById('form_control_irr_merc_sit_item').disabled = true;
+                document.getElementById('form_control_irr_merc_sit_item').value = "BSTCSLM0"
+                document.getElementById('form_control_add_conseq_financ_tipo_mont').disabled = true;
+                document.getElementById('form_control_add_conseq_financ_tipo_mont').value = "BSTCTMT0"
+                document.getElementById('form_control_add_conseq_financ_natureza').disabled = true;
+                document.getElementById('form_control_add_conseq_financ_natureza').value = "BSTCNT0"
+                document.getElementById('form_control_add_conseq_financ_codRub').disabled = true;
+                document.getElementById('form_control_add_conseq_financ_codRub').value = "BSTVRUB0"
+                document.getElementById('form_control_add_conseq_financ_valor').disabled = true;
+                document.getElementById('form_control_add_conseq_financ_valor').value = ""
+
+            }
+        }
+
+
+        console.log(resultado.id);
+        console.log(resultado.value);
+
+    }
+
+    function desactivaIrreg(resultado) {
+
+        if (document.getElementById('form_control_irr_nv') != null
+            && document.getElementById('form_control_irr_pu') != null
+            && document.getElementById('form_control_irr_btpan') != null
+            && document.getElementById('form_control_irr_table1') != null
+            && document.getElementById('form_control_irr_table2') != null) {
+
+            if (resultado.value == '6' || resultado.value == 'A4') {
+
+                document.getElementById('form_control_irr_nv').disabled = false;
+                document.getElementById('form_control_irr_pu').disabled = false;
+                document.getElementById('form_control_irr_btpan').disabled = false;
+                document.getElementById('form_control_irr_table1').disabled = false;
+                document.getElementById('form_control_irr_table2').disabled = false;
+
+            } else {
+
+                document.getElementById('form_control_irr_nv').disabled = true;
+                document.getElementById('form_control_irr_nv').value = "";
+                document.getElementById('form_control_irr_pu').disabled = true;
+                document.getElementById('form_control_irr_pu').value = "";
+                document.getElementById('form_control_irr_btpan').disabled = true;
+                document.getElementById('form_control_irr_table1').disabled = true;
+                document.getElementById('form_control_irr_table1').value = "";
+                document.getElementById('form_control_irr_table2').disabled = true;
+                document.getElementById('form_control_irr_table2').value = "";
+            }
+        }
+    }
+
+
+    function marcaValorUnico(id) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['id_documento'] = id;
+        param['op'] = 'conferir_unico_documento';
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+            }
+        });
+    }
+
+    function marcaValorUnicoSelo(checkboxId, isChecked) {
+        var param = $('form').serialize({ hash: true, submit: 'fakeSubmit' });
+        param['X-Requested-With'] = 'XMLHttpRequest';
+        param['id_selo'] = checkboxId;
+        param['status'] = isChecked ? "true" : "false";
+        param['op'] = 'conferir_unico_selo';
+        new Ajax.Request('/SGCCommunicatorWeb/CausServlet', {
+            method: 'post',
+            parameters: param,
+            evalScripts: true,
+            onComplete: function (transport) {
+                var response = transport.responseText;
+            }
+        });
+    }
+</script>

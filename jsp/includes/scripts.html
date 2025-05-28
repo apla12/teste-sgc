@@ -1,0 +1,65 @@
+
+<script type="text/javascript" src="${STATIC_JS}jquery.min.js"></script>
+<script type="text/javascript" src="${STATIC_JS}pf-bundle-styleguide.js"></script>
+<script type="text/javascript" src="${STATIC_BASE}/prototype/prototype.js"></script>
+<script type="text/javascript" src="${STATIC_JS}validation/FieldsClick.js"></script>
+<script type="text/javascript" src="${STATIC_JS}RadioSupply.js"></script>
+<script type="text/javascript" src="${STATIC_JS}FrameWorkUtils.js"></script>
+<script type="text/javascript" src="${STATIC_JS}dgitaTable.js"></script>
+<script type="text/javascript" src="${STATIC_JS}dgitaTable_jscriptfilter.js"></script>
+<script type="text/javascript" src="${STATIC_JS}jquery.twbsPagination.js"></script>
+<script type="text/javascript" src="${STATIC_JS}w3select.js"></script>
+<script type="text/javascript" src="${STATIC_JS}SistemaGestaoControlosFuncJS.js"></script> 
+
+<script type="text/javascript">
+	var jQ = jQuery.noConflict();
+
+	jQuery(function() {
+		jQuery("[data-toggle='tooltip']").tooltip()
+	});
+
+	// This is for the expandable panel icon
+	jQ(document).ready(
+			function() {
+				jQ("#form_searchPanel-inner-panel").on(
+						"hide.bs.collapse",
+						function() {
+							jQ("#form_searchPanel-header-toggle").addClass(
+									'panel-title-collapsed');
+						});
+				jQ("#form_searchPanel-inner-panel").on(
+						"show.bs.collapse",
+						function() {
+							jQ("#form_searchPanel-header-toggle").removeClass(
+									'panel-title-collapsed');
+						});
+			});
+
+	ignorar = new Array();
+	function aguardeIf(e) {
+
+		if (ignorar.indexOf(e.element().id) < 0 && e.defaultPrevented != true) {
+			aguarde();
+		}
+
+	}
+
+	Event.observe(window, 'load', function() {
+		if ($('form') != null && $('form') != undefined)
+			$('form').getInputs('submit').each(function(elmt) {
+				elmt.observe('click', aguardeIf);
+			});
+	});
+
+</script>
+<script type="text/javascript">
+	function showMessage(t, msg) {
+		var row = $('row_message');
+		row.select('#div_message')[0].update(msg);
+
+		$(t).up().up().insert({
+			after : row
+		});
+	}
+</script>
+
