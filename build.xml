@@ -1,0 +1,157 @@
+﻿<project basedir="." default="build" name="SGCCommunicatorWeb">
+	<property file="${basedir}/build.properties"/>
+	<property name="build.dir" value="${basedir}/build"/>
+	<property name="rsrc.dir" value="${basedir}/resources"/>
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="dest.dir" value="${build.dir}"/>
+	<property name="app.name" value="SGCCommunicatorWeb"/>
+	<property name="libraries.dir" value="${basedir}/../../../SVN/libraries"/>
+	<property name="metainfo.dir" value="${basedir}/src/java/META-INF"/>
+	<property name="dist.dir" value="${basedir}/../dist"/>
+	<property name="web.dir" value="./WebContent" />
+	<property name="web.build.dir" value="${build.dir}/WEB-INF/classes" />
+	<property name="weblib.build.dir" value="${build.dir}/WEB-INF/lib" />
+	<property name="weblogic.jar" value="${weblogic.home}/wlserver/server/lib/weblogic.jar" />
+	
+	<property name="debug" value="true"/>
+	<property name="debugLevel" value="lines,vars,source"/>
+	
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${libraries.dir}/ant/ant-contrib-0.6.jar" />
+	<taskdef resource="net/sf/antcontrib/antlib.xml" classpath="${libraries.dir}/ant/ant-contrib-0.6.jar" />
+	
+	<path id="manifest.class.path"/>
+
+	<path id="project.classpath">
+		<pathelement location="${libraries.dir}/ws_clients/SFA2SGCClient_1.0.1.jar" />
+		<pathelement location="${libraries.dir}/ws_clients/IMPeCSGCClient_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/CSRD2Webservice/CodelistWS_1-0-0.jar" />	
+		<pathelement location="${libraries.dir}/ws_clients/SIMTEMSGCClient_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/ws_clients/DLCC2SGCClient_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/ws_clients/consultaDeclaracaoSGC_Client_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/ws_clients/EXPCAUSGCClient_1-0-0.jar" />
+		<pathelement location="${libraries.dir}/ws_clients/TRACAUSGCClient_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/ws_clients/DSSNRSGCClient_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/AtosSecurity/AtosSecurity_3.1.0.jar" />
+		<pathelement location="${libraries.dir}/AtosEngineManagement/AtosEngineManagement_2.0.0.jar" />
+		<pathelement location="${libraries.dir}/AtosLDL/AtosLDL_2.0.0.jar" />
+		<pathelement location="${libraries.dir}/AtosCrudeLogin/AtosCrudeLogin_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/AtosUtils/AtosUtils_2.1.0.jar"/>
+		<pathelement location="${libraries.dir}/click/click-2.1.0-rel100.jar"/>
+		<pathelement location="${libraries.dir}/click/click-extras-2.1.0.jar" />
+		<pathelement location="${libraries.dir}/FrameworkClick/FrameworkClick_3.0.0.jar" />
+		<pathelement location="${libraries.dir}/retry/retry_sgc.jar" />
+		<pathelement location="${libraries.dir}/SGC/InterfaceSeleccao_wsdl.jar" />
+		<pathelement location="${libraries.dir}/SGC/sgc-callback-lib_V3.8.jar" />
+		<pathelement location="${libraries.dir}/SGC/ssa-callback-lib.jar" />
+		<pathelement location="${libraries.dir}/GESTAR/WsGestarClient-1.0.0.jar" />
+		<pathelement location="${libraries.dir}/SGC/SGCTemporizador_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/ClienteFilenet/WSClientFileNet_2.1.1.jar" />
+		<pathelement location="${dist.dir}/SGCCommon.jar" />
+		<pathelement location="${dist.dir}/SGCCommunicatorUtils.jar" />
+		<pathelement location="${dist.dir}/SGCCommunicatorService.jar" />
+		<pathelement location="${weblogic.jar}" />
+	</path>
+
+	<path id="project.classpath.lib">
+		<pathelement location="${libraries.dir}/AtosSecurity/AtosSecurity_2.1.0.jar" />
+		<pathelement location="${libraries.dir}/AtosLDL/AtosLDL_2.0.0.jar" />
+		<pathelement location="${libraries.dir}/AtosCrudeLogin/AtosCrudeLogin_1.0.0.jar" />
+		<pathelement location="${libraries.dir}/FrameworkClick/FrameworkClick_3.0.0.jar" />
+	</path>
+	
+	
+	<taskdef name="wlcompile" classname="weblogic.ant.taskdefs.build.WLCompileTask">
+		<classpath>
+			<pathelement location="${weblogic.jar}" />
+		</classpath>
+	</taskdef>
+
+	<target name="clean" description="Cleans the build directory">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="build">
+		<echo message="Building ${ant.project.name} " />
+		<antcall target="compile" />
+		<antcall target="war" />
+	</target>
+	
+	<!-- 
+	Compiles the source code
+	-->
+	<target name="compile" depends="clean" description="Only compiles SGC Services application, no appc">
+		<mkdir dir="${web.build.dir}" />
+		<javac debug="${debug}" debuglevel="${debugLevel}" srcdir="${src.dir}" destdir="${web.build.dir}">
+			<classpath>
+				<path refid="project.classpath" />
+			</classpath>
+		</javac>
+		<copy todir="${web.build.dir}" failonerror="no">
+			<fileset dir="${src.dir}">
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- 
+	Packs all in  a war
+	-->
+	<target name="war" description="Builds the War file.">
+		<path id="emptywar" />
+		<property name="manifestclasspath" value="emptywar" />
+		<property name="libspath" value="project.classpath.lib" />
+		<property name="ear.version" value="${project.version}" />
+		
+
+		<property name="use.client.jars" value="false" />
+		<property name="use.context" value="true" />
+		<tstamp>
+			<format property="timestamp" pattern="yyyyMMddhhmmss" locale="pt" />
+		</tstamp>
+		<property name="build.timestamp" value="timestamp" />
+
+
+		<path id="manifest.default.classpath">
+			<fileset dir="${libraries.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+			<path refid="${manifestclasspath}" />
+		</path>
+
+		<delete dir="${weblib.build.dir}" />
+		<mkdir dir="${weblib.build.dir}" />
+		<delete dir="${web.dir}/lib" />
+		<mkdir dir="${web.dir}/lib" />
+
+		<for param="libfile">
+			<path refid="${libspath}" />
+			<sequential>
+				<copy todir="${weblib.build.dir}">
+					<fileset file="@{libfile}" />
+				</copy>
+			</sequential>
+		</for>
+		<property name="war.name" value="${app.name}.war" />
+
+		<copy todir="${web.build.dir}" failonerror="no">
+			<fileset dir="${rsrc.dir}" />
+		</copy>
+
+
+		<war destfile="../dist/${war.name}" webxml="${web.dir}/WEB-INF/web.xml">
+			<classes dir="${web.build.dir}" />
+			<fileset dir="${web.dir}">
+				<exclude name="**/classes/**/*.*" />
+				<exclude name="WEB-INF/web.xml" />
+			</fileset>
+			<fileset dir="${build.dir}">
+				<exclude name="**/classes/**/*.*" />
+			</fileset>
+
+			<manifest>
+				<attribute name="Class-Path" value="${manifest.class.property}" />
+			</manifest>
+		</war>
+	</target>
+	
+</project>
