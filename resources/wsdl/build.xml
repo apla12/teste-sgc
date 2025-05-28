@@ -1,0 +1,140 @@
+<project name="Utils" default="build-all" basedir=".">
+
+<description>
+    <!-- This build file is responsible for generating Java artifacts for the SSA project. -->
+</description>
+
+<!-- Load properties from an external file for easier configuration management. FILE NAME: build.properties-->
+<property file="${basedir}/build.properties"/>
+<property name="weblogicPath" value="${weblogic.home}/wlserver/server/lib/weblogic.jar"/>
+<property name="SVNPath" value="${svn.home}"/>
+
+<!-- Initial echo message to indicate that the build process has started. -->
+<echo message="Starting the build process..."/>
+
+<!-- Set up the classpath for Axis, including necessary jars for web service generation and interaction. -->
+<path id="axis.classpath">
+    <fileset dir="${SVNPath}\axis">
+        <include name="axis-ant.jar"/>
+        <include name="axis.jar"/>
+        <include name="commons-logging*.jar"/>
+        <include name="commons-discovery*.jar"/>
+        <include name="jaxrpc*.jar"/>
+        <include name="wsdl4j.jar"/>
+    </fileset>
+</path>    
+
+<!-- Define task for using Ant-contrib, which provides additional task support such as conditional statements. -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+        <pathelement location="${SVNPath}\ant\ant-contrib-1.0b3.jar"/>
+    </classpath>
+</taskdef>
+
+<!-- Define the wsdlc task for WSDL to Java conversion using WebLogic specific tool. -->
+<taskdef name="wsdlc" classname="weblogic.wsee.tools.anttasks.WsdlcTask">
+    <classpath>
+        <pathelement location="${weblogicPath}" />
+    </classpath>
+</taskdef>
+
+<!-- Define the WebLogic compiler task for compiling Java sources in a WebLogic server environment. -->
+<taskdef name="wlcompile" classname="weblogic.ant.taskdefs.build.WLCompileTask">
+    <classpath>
+        <pathelement location="${weblogicPath}" />
+    </classpath>
+</taskdef>
+
+<!-- Define the Axis task for generating Java files from WSDL using the Axis framework. -->
+<taskdef name="axis-wsdl2java"
+         classname="org.apache.axis.tools.ant.wsdl.Wsdl2javaAntTask"
+         classpathref="axis.classpath"/>
+
+<!-- Main target that coordinates the building of both request and response parts. -->
+<target name="build-all" depends="build-response, build-request" description="Generates all java files ">
+    <delete dir="${basedir}/build"/>
+	<delete dir="${basedir}/java"/>
+	<echo message="All Java files have been generated." />
+</target>
+
+<!-- Target to handle the generation of response-related artifacts. -->
+<target name="build-response">
+    <mkdir dir="${build.path}" />
+    <echo message="** WARNING Generating Implementation for Response **" />
+    <wsdlc verbose="false" srcWsdl="${response.wsdl}" destJavadocDir="${build.path}/tempJavaDoc" destJwsDir="${build.path}" destImplDir="${src.path}" packageName="${response.package}" type="JAXWS" />
+    <jar destfile="${build.path}/InterfaceSubsistema_wsdl_doc.jar" basedir="${build.path}/tempJavaDoc" includes="**/*.*" />
+    <antcall target="generate-response-clients" />
+    <move overwrite="true" todir="${common.elib.dir}">
+        <fileset dir="${build.path}/">
+            <include name="InterfaceSubsistema_wsdl_doc.jar" />
+            <include name="InterfaceSubsistema_wsdl.jar" />
+            <include name="communicator_callback_client.jar" />
+        </fileset>
+    </move>
+	<echo message="Response-related JAR files have been moved to the library directory." />
+</target>
+
+<!-- Target to generate client libraries from the response WSDL. -->
+<target name="generate-response-clients">
+    <property name="response-client.build.path" value="${build.path}/response-client" />
+    <mkdir dir="${response-client.build.path}" />
+    <axis-wsdl2java output="${response-client.build.path}" testcase="false" verbose="true" helpergen="false" url="file:${response.wsdl}">
+        <mapping namespace="urn:selection" package="${response.client.package}.common" />
+        <mapping namespace="urn:webservice" package="${response.client.package}" />
+    </axis-wsdl2java>
+    <wlcompile srcdir="${response-client.build.path}" destdir="${response-client.build.path}">
+        <classpath>
+            <pathelement path="${common.elib.dir}/SGCInterfaceSubsistema_wsdl.jar"/>
+        </classpath>
+    </wlcompile>
+    <fileset id="jar.fileset" dir="${response-client.build.path}/APP-INF/classes">
+        <include name="**/*.*" />
+    </fileset>
+    <jar destfile="${build.path}/communicator_callback_client.jar" index="true">
+        <fileset refid="jar.fileset" />
+    </jar>
+	<echo message="Response client JAR has been created." />
+</target>
+
+<!-- Similar structure for request-related artifacts, generating implementation, clients, and moving JARs. -->
+<target name="build-request">
+    <mkdir dir="${build.path}" />
+    <delete dir="${build.path}/tempJavaDoc"/>
+    <echo message="** WARNING Generating Implementation for Request **" />
+    <wsdlc verbose="false" srcWsdl="${request.wsdl}" destJavadocDir="${build.path}/tempJavaDoc" destJwsDir="${build.path}" destImplDir="${src.path}" packageName="${request.package}" type="JAXWS" />
+    <jar destfile="${build.path}/InterfaceSeleccao_wsdl_doc.jar" basedir="${build.path}/tempJavaDoc" includes="**/*.*" />
+    <antcall target="generate-request-clients" />
+    <move todir="${common.elib.dir}">
+        <fileset dir="${build.path}/">
+            <include name="InterfaceSeleccao_wsdl_doc.jar" />
+            <include name="InterfaceSeleccao_wsdl.jar" />
+            <include name="communicator_callback_client.jar" />
+            <include name="ssa_client.jar" />
+        </fileset>
+    </move>
+	<echo message="Request-related JAR files have been moved to the library directory." />
+</target>
+
+<!-- Target for generating request client libraries. -->
+<target name="generate-request-clients">
+    <property name="request-client.build.path" value="${build.path}/request-client" />
+    <mkdir dir="${request-client.build.path}" />
+    <axis-wsdl2java output="${request-client.build.path}" testcase="false" verbose="true" helpergen="false" url="file:${request.wsdl}">
+        <mapping namespace="urn:selection" package="${request.client.package}.common" />
+        <mapping namespace="urn:webservice" package="${request.client.package}" />
+    </axis-wsdl2java>
+    <wlcompile srcdir="${request-client.build.path}" destdir="${request-client.build.path}">
+        <classpath>
+            <pathelement path="${common.elib.dir}/InterfaceSeleccao_wsdl.jar"/>
+        </classpath>
+    </wlcompile>
+    <fileset id="jar.fileset" dir="${request-client.build.path}/APP-INF/classes">
+        <include name="**/*.*" />
+    </fileset>
+    <jar destfile="${build.path}/ssa_client.jar" index="true">
+        <fileset refid="jar.fileset" />
+    </jar>
+	 <echo message="Request client JAR has been created." />
+</target>
+
+</project>
